@@ -44,6 +44,18 @@ export interface GroupSummary {
   path?: string;
   subGroupCount?: number;
 }
+export interface ClientRepresentation {
+  id: string;
+  clientId: string;
+  enabled?: boolean;
+  publicClient?: boolean;
+  bearerOnly?: boolean;
+  standardFlowEnabled?: boolean;
+  directAccessGrantsEnabled?: boolean;
+  serviceAccountsEnabled?: boolean;
+  redirectUris?: string[];
+  attributes?: Record<string, string>;
+}
 
 export class KeycloakApiError extends Error {
   constructor(
@@ -116,6 +128,19 @@ export class KeycloakAdminApi {
     const q = new URLSearchParams({ first: '0', max: String(max), briefRepresentation: 'true' });
     if (search) q.set('search', search);
     return this.get(`/admin/realms/${enc(realm)}/groups?${q}`);
+  }
+
+  /** GET /admin/realms/{realm}/clients/{id} (id = internal UUID, not clientId). */
+  getClient(realm: string, id: string): Promise<ClientRepresentation> {
+    return this.get(`/admin/realms/${enc(realm)}/clients/${enc(id)}`);
+  }
+
+  /** GET /admin/realms/{realm}/clients/{id}/client-secret. Keep the result in memory only. */
+  async getClientSecret(realm: string, id: string): Promise<string | undefined> {
+    const r = await this.get<{ value?: string }>(
+      `/admin/realms/${enc(realm)}/clients/${enc(id)}/client-secret`,
+    );
+    return r.value;
   }
 
   // --- internals -----------------------------------------------------------

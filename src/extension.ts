@@ -3,7 +3,9 @@ import { AdminClientFactory } from './connections/AdminClientFactory';
 import { runAddConnectionWizard } from './connections/addConnectionWizard';
 import { ConnectionStore } from './connections/ConnectionStore';
 import { ProdGuard } from './connections/ProdGuard';
-import { decode } from './tokens/JwtInspector';
+import { PlaygroundPanel } from './playground/PlaygroundPanel';
+import { getToken, pickClientTarget } from './tokens/getTokenCommand';
+import { decode, stripBearer } from './tokens/JwtInspector';
 import { initLog, log } from './util/log';
 import { redact } from './util/redact';
 import { ExplorerTreeProvider, type Node } from './views/ExplorerTreeProvider';
@@ -104,19 +106,33 @@ export function activate(ctx: vscode.ExtensionContext): void {
       tree.refresh();
     }),
 
+    vscode.commands.registerCommand('keycloak.getToken', async (node?: Node) => {
+      try {
+        const target =
+          node?.type === 'item' && node.kind === 'clients'
+            ? { conn: node.conn, realm: node.realm, id: node.id }
+            : await pickClientTarget(store, clients);
+        if (target) await getToken(target, clients);
+      } catch (e) {
+        log(`Get token failed: ${errMsg(e)}`);
+        vscode.window.showErrorMessage(errMsg(e));
+      }
+    }),
+
     vscode.commands.registerCommand('keycloak.decodeJwt', async () => {
       const editor = vscode.window.activeTextEditor;
       const selected = editor?.document.getText(editor.selection).trim();
-      const token =
+      const input =
         selected || (await vscode.window.showInputBox({ prompt: 'Paste a JWT', password: true }));
-      if (!token) return;
+      if (!input) return;
+      const token = stripBearer(input);
       try {
-        const decoded = decode(token);
-        const doc = await vscode.workspace.openTextDocument({
-          language: 'json',
-          content: JSON.stringify(decoded, null, 2),
+        const { payload } = decode(token);
+        PlaygroundPanel.show({
+          title: typeof payload.azp === 'string' ? payload.azp : 'Decoded JWT',
+          subtitle: typeof payload.iss === 'string' ? payload.iss : 'Offline decode',
+          tokens: { access_token: token },
         });
-        await vscode.window.showTextDocument(doc, { preview: true });
       } catch (e) {
         log(`Decode failed: ${errMsg(e)}`);
         vscode.window.showErrorMessage(`Not a valid JWT: ${errMsg(e)}`);

@@ -14,7 +14,14 @@ Early development. Available today:
   connection is tested before it is saved.
 - **Explorer** (Keycloak icon in the activity bar): browse realms, clients, users, roles and
   groups; filter large realms. Production connections are marked red and read-only by default.
-- **Keycloak: Decode JWT**: offline decode of a selected token.
+- **Get Token** (key icon on a client, or `Keycloak: Get Token`): client credentials,
+  authorization code + PKCE (browser login), device code, and the legacy password grant
+  (off by default, `keycloak.tokens.allowPasswordGrant`).
+- **Token Playground**: decoded header and payload, signature check against the realm keys,
+  expiry countdown, roles / scopes / audience / groups at a glance, explained claims.
+  Refresh, Introspect, Userinfo, copy as `Authorization` header or curl.
+- **Keycloak: Decode JWT**: select a token in any editor (or paste one) to open it in the
+  playground. Works without a connection; the signature is checked if the issuer is reachable.
 
 ## Quick start (development)
 

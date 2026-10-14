@@ -28,6 +28,21 @@
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
+    "configuration": {
+      "title": "Keycloak",
+      "properties": {
+        "keycloak.tokens.scope": {
+          "type": "string",
+          "default": "openid profile email",
+          "description": "Scopes requested for user logins (authorization code, device code, password)."
+        },
+        "keycloak.tokens.allowPasswordGrant": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Offer the legacy Resource Owner Password grant. **Development only**: it is deprecated in OAuth 2.1."
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -95,6 +110,12 @@
         "icon": "$(lock)"
       },
       {
+        "command": "keycloak.getToken",
+        "title": "Get Token",
+        "category": "Keycloak",
+        "icon": "$(key)"
+      },
+      {
         "command": "keycloak.decodeJwt",
         "title": "Decode JWT",
         "category": "Keycloak"
@@ -125,6 +146,16 @@
       ],
       "view/item/context": [
         {
+          "command": "keycloak.getToken",
+          "when": "view == keycloak.explorer && viewItem == client",
+          "group": "inline"
+        },
+        {
+          "command": "keycloak.getToken",
+          "when": "view == keycloak.explorer && viewItem == client",
+          "group": "0_token"
+        },
+        {
           "command": "keycloak.refresh",
           "when": "view == keycloak.explorer && viewItem =~ /^(connection|realm|category)/",
           "group": "inline"
@@ -143,6 +174,13 @@
           "command": "keycloak.removeConnection",
           "when": "view == keycloak.explorer && viewItem =~ /^connection/",
           "group": "9_remove"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "keycloak.decodeJwt",
+          "when": "editorHasSelection",
+          "group": "9_keycloak"
         }
       ],
       "commandPalette": [
