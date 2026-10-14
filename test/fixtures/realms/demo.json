@@ -1,0 +1,62 @@
+{
+  "realm": "demo",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "reports-viewer", "description": "Can read reports" },
+      {
+        "name": "reports-admin",
+        "description": "Can manage reports",
+        "composite": true,
+        "composites": { "realm": ["reports-viewer"] }
+      }
+    ]
+  },
+  "groups": [
+    { "name": "analysts", "realmRoles": ["reports-viewer"] },
+    { "name": "admins", "realmRoles": ["reports-admin"] }
+  ],
+  "clients": [
+    {
+      "clientId": "reports-backend",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "dev-only-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "reports-spa",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://127.0.0.1/*", "http://localhost:3000/*"],
+      "webOrigins": ["+"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "email": "alice@example.com",
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "Analyst",
+      "credentials": [{ "type": "password", "value": "alice", "temporary": false }],
+      "groups": ["/analysts"]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "email": "bob@example.com",
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "bob", "temporary": false }],
+      "groups": ["/admins"]
+    }
+  ]
+}
