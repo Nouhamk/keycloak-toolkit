@@ -3,11 +3,11 @@
   "displayName": "Toolkit for Keycloak (Community)",
   "description": "Token playground, realm-as-code diff and developer workflows for Keycloak. Unofficial community project.",
   "version": "0.0.1",
-  "publisher": "nouhaila",
+  "publisher": "nouhamk",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nouhaila/keycloak-toolkit"
+    "url": "https://github.com/Nouhamk/keycloak-toolkit"
   },
   "engines": {
     "vscode": "^1.95.0",
