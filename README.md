@@ -8,7 +8,13 @@ realm-as-code diff, local Keycloak and more.
 
 ## Status
 
-Phase 0 (scaffold). Available today: **Keycloak: Decode JWT** (offline decode of a selected token).
+Early development. Available today:
+
+- **Keycloak: Add Connection**: connect with an admin user or a service account; the
+  connection is tested before it is saved.
+- **Explorer** (Keycloak icon in the activity bar): browse realms, clients, users, roles and
+  groups; filter large realms. Production connections are marked red and read-only by default.
+- **Keycloak: Decode JWT**: offline decode of a selected token.
 
 ## Quick start (development)
 
@@ -25,8 +31,13 @@ users `alice` / `bob` (password = username), groups `analysts` / `admins`.
 
 ## Roadmap
 
-1. Connections + Explorer 2. Token Playground 3. Realm-as-Code diff 4. AI tools
-2. Local Keycloak 6. Snippets 7. Theme dev 8. OpenFGA bridge
+- Token Playground: get, inspect and verify tokens for any client
+- Realm-as-code: compare realm files with a live server or across environments
+- AI assistant tools (read-only, secrets always masked)
+- One-click local Keycloak
+- Client configuration snippets (Spring Boot, Node, Python, oauth2-proxy, Kubernetes)
+- Login theme preview
+- OpenFGA access checks
 
 ## Security
 

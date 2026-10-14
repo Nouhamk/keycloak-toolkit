@@ -28,13 +28,134 @@
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "keycloak",
+          "title": "Keycloak",
+          "icon": "$(key)"
+        }
+      ]
+    },
+    "views": {
+      "keycloak": [
+        {
+          "id": "keycloak.explorer",
+          "name": "Connections"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "keycloak.explorer",
+        "contents": "No Keycloak connections yet.\n[Add Connection](command:keycloak.addConnection)\n[Decode a JWT](command:keycloak.decodeJwt)"
+      }
+    ],
     "commands": [
+      {
+        "command": "keycloak.addConnection",
+        "title": "Add Connection",
+        "category": "Keycloak",
+        "icon": "$(add)"
+      },
+      {
+        "command": "keycloak.removeConnection",
+        "title": "Remove Connection",
+        "category": "Keycloak",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "keycloak.refresh",
+        "title": "Refresh",
+        "category": "Keycloak",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "keycloak.filter",
+        "title": "Filter",
+        "category": "Keycloak",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "keycloak.clearFilter",
+        "title": "Clear Filter",
+        "category": "Keycloak",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "keycloak.unlockProd",
+        "title": "Unlock Production Connection",
+        "category": "Keycloak",
+        "icon": "$(unlock)"
+      },
+      {
+        "command": "keycloak.lockProd",
+        "title": "Lock Production Connection",
+        "category": "Keycloak",
+        "icon": "$(lock)"
+      },
       {
         "command": "keycloak.decodeJwt",
         "title": "Decode JWT",
         "category": "Keycloak"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "keycloak.addConnection",
+          "when": "view == keycloak.explorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "keycloak.filter",
+          "when": "view == keycloak.explorer",
+          "group": "navigation@2"
+        },
+        {
+          "command": "keycloak.clearFilter",
+          "when": "view == keycloak.explorer && keycloak.filterActive",
+          "group": "navigation@3"
+        },
+        {
+          "command": "keycloak.refresh",
+          "when": "view == keycloak.explorer",
+          "group": "navigation@4"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "keycloak.refresh",
+          "when": "view == keycloak.explorer && viewItem =~ /^(connection|realm|category)/",
+          "group": "inline"
+        },
+        {
+          "command": "keycloak.unlockProd",
+          "when": "view == keycloak.explorer && viewItem == connection.prod",
+          "group": "1_prod"
+        },
+        {
+          "command": "keycloak.lockProd",
+          "when": "view == keycloak.explorer && viewItem == connection.prod",
+          "group": "1_prod"
+        },
+        {
+          "command": "keycloak.removeConnection",
+          "when": "view == keycloak.explorer && viewItem =~ /^connection/",
+          "group": "9_remove"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "keycloak.refresh",
+          "when": "false"
+        },
+        {
+          "command": "keycloak.clearFilter",
+          "when": "keycloak.filterActive"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "node esbuild.mjs",
