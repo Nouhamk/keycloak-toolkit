@@ -37,7 +37,6 @@ users `alice` / `bob` (password = username), groups `analysts` / `admins`.
 - One-click local Keycloak
 - Client configuration snippets (Spring Boot, Node, Python, oauth2-proxy, Kubernetes)
 - Login theme preview
-- OpenFGA access checks
 
 ## Security
 
