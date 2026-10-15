@@ -3,8 +3,12 @@ services:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.0}
     command: start-dev --import-realm --health-enabled=true
     environment:
+      # Keycloak 26+
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      # Keycloak 25 and older
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - '8080:8080'
       - '9000:9000'

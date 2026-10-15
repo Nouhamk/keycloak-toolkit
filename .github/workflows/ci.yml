@@ -19,6 +19,7 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         keycloak: ['25.0', '26.0']
     steps:
