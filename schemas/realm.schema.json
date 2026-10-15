@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Nouhamk/keycloak-toolkit/schemas/realm.schema.json",
+  "title": "Keycloak realm (export / keycloak-config-cli)",
+  "description": "Subset of Keycloak's RealmRepresentation. Unknown properties are allowed. In YAML, keycloak-config-cli substitutions such as $(env:VAR) are accepted for booleans and numbers.",
+  "type": "object",
+  "required": ["realm"],
+  "definitions": {
+    "subst": { "type": "string", "pattern": "^\\$\\(" },
+    "bool": { "anyOf": [{ "type": "boolean" }, { "$ref": "#/definitions/subst" }] },
+    "int": { "anyOf": [{ "type": "integer" }, { "$ref": "#/definitions/subst" }] },
+    "strings": { "type": "array", "items": { "type": "string" } },
+    "attributes": { "type": "object", "additionalProperties": { "type": "string" } },
+    "multiAttributes": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/strings" }
+    },
+    "role": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "composite": { "$ref": "#/definitions/bool" },
+        "composites": {
+          "type": "object",
+          "properties": {
+            "realm": { "$ref": "#/definitions/strings" },
+            "client": {
+              "type": "object",
+              "additionalProperties": { "$ref": "#/definitions/strings" }
+            }
+          }
+        },
+        "attributes": { "$ref": "#/definitions/multiAttributes" }
+      }
+    },
+    "group": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "path": { "type": "string" },
+        "realmRoles": { "$ref": "#/definitions/strings" },
+        "clientRoles": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/strings" }
+        },
+        "attributes": { "$ref": "#/definitions/multiAttributes" },
+        "subGroups": { "type": "array", "items": { "$ref": "#/definitions/group" } }
+      }
+    },
+    "protocolMapper": {
+      "type": "object",
+      "required": ["name", "protocolMapper"],
+      "properties": {
+        "name": { "type": "string" },
+        "protocol": { "enum": ["openid-connect", "saml"] },
+        "protocolMapper": { "type": "string" },
+        "consentRequired": { "$ref": "#/definitions/bool" },
+        "config": { "$ref": "#/definitions/attributes" }
+      }
+    },
+    "client": {
+      "type": "object",
+      "required": ["clientId"],
+      "properties": {
+        "clientId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "enabled": { "$ref": "#/definitions/bool" },
+        "protocol": { "enum": ["openid-connect", "saml"] },
+        "publicClient": { "$ref": "#/definitions/bool" },
+        "bearerOnly": { "$ref": "#/definitions/bool" },
+        "clientAuthenticatorType": { "type": "string" },
+        "secret": {
+          "type": "string",
+          "description": "Do not commit real secrets. Use a substitution like $(env:CLIENT_SECRET)."
+        },
+        "rootUrl": { "type": "string" },
+        "baseUrl": { "type": "string" },
+        "adminUrl": { "type": "string" },
+        "redirectUris": { "$ref": "#/definitions/strings" },
+        "webOrigins": { "$ref": "#/definitions/strings" },
+        "standardFlowEnabled": { "$ref": "#/definitions/bool" },
+        "implicitFlowEnabled": { "$ref": "#/definitions/bool" },
+        "directAccessGrantsEnabled": { "$ref": "#/definitions/bool" },
+        "serviceAccountsEnabled": { "$ref": "#/definitions/bool" },
+        "consentRequired": { "$ref": "#/definitions/bool" },
+        "fullScopeAllowed": { "$ref": "#/definitions/bool" },
+        "frontchannelLogout": { "$ref": "#/definitions/bool" },
+        "defaultClientScopes": { "$ref": "#/definitions/strings" },
+        "optionalClientScopes": { "$ref": "#/definitions/strings" },
+        "attributes": { "$ref": "#/definitions/attributes" },
+        "protocolMappers": { "type": "array", "items": { "$ref": "#/definitions/protocolMapper" } }
+      }
+    }
+  },
+  "properties": {
+    "realm": { "type": "string", "description": "Realm name." },
+    "displayName": { "type": "string" },
+    "enabled": { "$ref": "#/definitions/bool" },
+    "sslRequired": { "enum": ["all", "external", "none"] },
+    "registrationAllowed": { "$ref": "#/definitions/bool" },
+    "loginWithEmailAllowed": { "$ref": "#/definitions/bool" },
+    "duplicateEmailsAllowed": { "$ref": "#/definitions/bool" },
+    "resetPasswordAllowed": { "$ref": "#/definitions/bool" },
+    "verifyEmail": { "$ref": "#/definitions/bool" },
+    "bruteForceProtected": { "$ref": "#/definitions/bool" },
+    "accessTokenLifespan": { "$ref": "#/definitions/int" },
+    "ssoSessionIdleTimeout": { "$ref": "#/definitions/int" },
+    "ssoSessionMaxLifespan": { "$ref": "#/definitions/int" },
+    "passwordPolicy": { "type": "string" },
+    "loginTheme": { "type": "string" },
+    "accountTheme": { "type": "string" },
+    "emailTheme": { "type": "string" },
+    "roles": {
+      "type": "object",
+      "properties": {
+        "realm": { "type": "array", "items": { "$ref": "#/definitions/role" } },
+        "client": {
+          "type": "object",
+          "additionalProperties": { "type": "array", "items": { "$ref": "#/definitions/role" } }
+        }
+      }
+    },
+    "groups": { "type": "array", "items": { "$ref": "#/definitions/group" } },
+    "defaultRoles": { "$ref": "#/definitions/strings" },
+    "clients": { "type": "array", "items": { "$ref": "#/definitions/client" } },
+    "clientScopes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "protocol": { "enum": ["openid-connect", "saml"] },
+          "attributes": { "$ref": "#/definitions/attributes" },
+          "protocolMappers": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/protocolMapper" }
+          }
+        }
+      }
+    },
+    "defaultDefaultClientScopes": { "$ref": "#/definitions/strings" },
+    "defaultOptionalClientScopes": { "$ref": "#/definitions/strings" },
+    "users": {
+      "type": "array",
+      "description": "Avoid committing users with credentials to source control.",
+      "items": {
+        "type": "object",
+        "required": ["username"],
+        "properties": {
+          "username": { "type": "string" },
+          "email": { "type": "string" },
+          "enabled": { "$ref": "#/definitions/bool" },
+          "realmRoles": { "$ref": "#/definitions/strings" },
+          "groups": { "$ref": "#/definitions/strings" }
+        }
+      }
+    },
+    "identityProviders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["alias", "providerId"],
+        "properties": {
+          "alias": { "type": "string" },
+          "providerId": { "type": "string" },
+          "enabled": { "$ref": "#/definitions/bool" },
+          "config": { "$ref": "#/definitions/attributes" }
+        }
+      }
+    },
+    "attributes": { "$ref": "#/definitions/attributes" }
+  }
+}

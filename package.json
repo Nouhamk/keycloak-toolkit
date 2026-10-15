@@ -28,6 +28,25 @@
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "*.realm.json",
+          "*-realm.json",
+          "realm-export.json"
+        ],
+        "url": "./schemas/realm.schema.json"
+      }
+    ],
+    "yamlValidation": [
+      {
+        "fileMatch": [
+          "*.realm.yaml",
+          "*.realm.yml"
+        ],
+        "url": "./schemas/realm.schema.json"
+      }
+    ],
     "configuration": {
       "title": "Keycloak",
       "properties": {
@@ -110,6 +129,24 @@
         "icon": "$(lock)"
       },
       {
+        "command": "keycloak.pullRealm",
+        "title": "Pull Realm to File",
+        "category": "Keycloak",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "keycloak.compareWithLive",
+        "title": "Compare with Live Realm",
+        "category": "Keycloak",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "keycloak.compareRealms",
+        "title": "Compare Two Realms",
+        "category": "Keycloak",
+        "icon": "$(diff-multiple)"
+      },
+      {
         "command": "keycloak.getToken",
         "title": "Get Token",
         "category": "Keycloak",
@@ -146,6 +183,16 @@
       ],
       "view/item/context": [
         {
+          "command": "keycloak.pullRealm",
+          "when": "view == keycloak.explorer && viewItem == realm",
+          "group": "2_realm@1"
+        },
+        {
+          "command": "keycloak.compareRealms",
+          "when": "view == keycloak.explorer && viewItem == realm",
+          "group": "2_realm@2"
+        },
+        {
           "command": "keycloak.getToken",
           "when": "view == keycloak.explorer && viewItem == client",
           "group": "inline"
@@ -174,6 +221,20 @@
           "command": "keycloak.removeConnection",
           "when": "view == keycloak.explorer && viewItem =~ /^connection/",
           "group": "9_remove"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "keycloak.compareWithLive",
+          "when": "resourceExtname == .json",
+          "group": "3_compare"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "keycloak.compareWithLive",
+          "when": "resourceScheme == file && resourceFilename =~ /realm.*\\.json$/",
+          "group": "navigation"
         }
       ],
       "editor/context": [

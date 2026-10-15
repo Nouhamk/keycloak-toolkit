@@ -4,6 +4,8 @@ import { runAddConnectionWizard } from './connections/addConnectionWizard';
 import { ConnectionStore } from './connections/ConnectionStore';
 import { ProdGuard } from './connections/ProdGuard';
 import { PlaygroundPanel } from './playground/PlaygroundPanel';
+import { compareRealms, compareWithLive, pickRealm, pullRealm } from './realmAsCode/DiffCommands';
+import { RealmDocumentProvider, SCHEME } from './realmAsCode/RealmDocumentProvider';
 import { getToken, pickClientTarget } from './tokens/getTokenCommand';
 import { decode, stripBearer } from './tokens/JwtInspector';
 import { initLog, log } from './util/log';
@@ -12,6 +14,15 @@ import { ExplorerTreeProvider, type Node } from './views/ExplorerTreeProvider';
 
 function errMsg(e: unknown): string {
   return redact(e instanceof Error ? e.message : String(e));
+}
+
+async function guarded(what: string, fn: () => Promise<void>): Promise<void> {
+  try {
+    await fn();
+  } catch (e) {
+    log(`${what} failed: ${errMsg(e)}`);
+    vscode.window.showErrorMessage(`${what} failed: ${errMsg(e)}`);
+  }
 }
 
 export function activate(ctx: vscode.ExtensionContext): void {
@@ -105,6 +116,35 @@ export function activate(ctx: vscode.ExtensionContext): void {
       guard.lock(conn.id);
       tree.refresh();
     }),
+
+    vscode.workspace.registerTextDocumentContentProvider(
+      SCHEME,
+      new RealmDocumentProvider(clients),
+    ),
+
+    vscode.commands.registerCommand('keycloak.pullRealm', async (node?: Node) =>
+      guarded('Pull realm', async () => {
+        const ref =
+          node?.type === 'realm'
+            ? { conn: node.conn, realm: node.realm }
+            : await pickRealm(store, clients, 'Pull realm');
+        if (ref) await pullRealm(ref, clients);
+      }),
+    ),
+
+    vscode.commands.registerCommand('keycloak.compareWithLive', (uri?: vscode.Uri) =>
+      guarded('Compare with live realm', () => compareWithLive(uri, store, clients)),
+    ),
+
+    vscode.commands.registerCommand('keycloak.compareRealms', (node?: Node) =>
+      guarded('Compare realms', () =>
+        compareRealms(
+          store,
+          clients,
+          node?.type === 'realm' ? { conn: node.conn, realm: node.realm } : undefined,
+        ),
+      ),
+    ),
 
     vscode.commands.registerCommand('keycloak.getToken', async (node?: Node) => {
       try {

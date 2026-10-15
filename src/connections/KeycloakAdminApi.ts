@@ -143,17 +143,31 @@ export class KeycloakAdminApi {
     return r.value;
   }
 
-  // --- internals -----------------------------------------------------------
+  /**
+   * POST /admin/realms/{realm}/partial-export. Read-only on the server despite the verb.
+   * Returns realm settings, clients, roles, groups, client scopes, flows and components.
+   * Never includes users. Keycloak masks client secrets as "**********".
+   */
+  partialExport(realm: string): Promise<Record<string, unknown>> {
+    const q = new URLSearchParams({ exportClients: 'true', exportGroupsAndRoles: 'true' });
+    return this.call('POST', `/admin/realms/${enc(realm)}/partial-export?${q}`);
+  }
 
-  private async get<T>(path: string): Promise<T> {
-    const token = await this.accessToken();
-    let res = await this.request(path, { headers: { authorization: `Bearer ${token}` } });
+  // --- internals ---------------------------------------------------------
+
+  private get<T>(path: string): Promise<T> {
+    return this.call('GET', path);
+  }
+
+  private async call<T>(method: 'GET' | 'POST', path: string): Promise<T> {
+    const send = (token: string) =>
+      this.request(path, { method, headers: { authorization: `Bearer ${token}` } });
+    let res = await send(await this.accessToken());
     if (res.status === 401) {
       this.token = undefined;
-      const fresh = await this.accessToken();
-      res = await this.request(path, { headers: { authorization: `Bearer ${fresh}` } });
+      res = await send(await this.accessToken());
     }
-    if (!res.ok) throw await httpError(res, `GET ${path.split('?')[0]}`);
+    if (!res.ok) throw await httpError(res, `${method} ${path.split('?')[0]}`);
     return (await res.json()) as T;
   }
 
