@@ -147,6 +147,12 @@
         "icon": "$(diff-multiple)"
       },
       {
+        "command": "keycloak.explainAccess",
+        "title": "Explain Access…",
+        "category": "Keycloak",
+        "icon": "$(question)"
+      },
+      {
         "command": "keycloak.getToken",
         "title": "Get Token",
         "category": "Keycloak",
@@ -182,6 +188,16 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "keycloak.explainAccess",
+          "when": "view == keycloak.explorer && viewItem == user",
+          "group": "inline"
+        },
+        {
+          "command": "keycloak.explainAccess",
+          "when": "view == keycloak.explorer && viewItem =~ /^(user|realm)$/",
+          "group": "0_access"
+        },
         {
           "command": "keycloak.pullRealm",
           "when": "view == keycloak.explorer && viewItem == realm",

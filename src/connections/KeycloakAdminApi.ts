@@ -53,8 +53,23 @@ export interface ClientRepresentation {
   standardFlowEnabled?: boolean;
   directAccessGrantsEnabled?: boolean;
   serviceAccountsEnabled?: boolean;
+  fullScopeAllowed?: boolean;
   redirectUris?: string[];
   attributes?: Record<string, string>;
+}
+
+export interface RoleRepresentation {
+  id: string;
+  name: string;
+  description?: string;
+  composite?: boolean;
+  clientRole?: boolean;
+  /** Realm id for realm roles, client UUID for client roles. */
+  containerId?: string;
+}
+export interface RoleMappings {
+  realmMappings?: RoleRepresentation[];
+  clientMappings?: Record<string, { id: string; client: string; mappings: RoleRepresentation[] }>;
 }
 
 export class KeycloakApiError extends Error {
@@ -141,6 +156,69 @@ export class KeycloakAdminApi {
       `/admin/realms/${enc(realm)}/clients/${enc(id)}/client-secret`,
     );
     return r.value;
+  }
+
+  /** GET /admin/realms/{realm}/users/{id}/role-mappings — direct (non-effective) mappings. */
+  getUserRoleMappings(realm: string, userId: string): Promise<RoleMappings> {
+    return this.get(`/admin/realms/${enc(realm)}/users/${enc(userId)}/role-mappings`);
+  }
+
+  /** GET /admin/realms/{realm}/users/{id}/groups — direct group membership. */
+  getUserGroups(realm: string, userId: string): Promise<GroupSummary[]> {
+    return this.get(
+      `/admin/realms/${enc(realm)}/users/${enc(userId)}/groups?briefRepresentation=true&max=500`,
+    );
+  }
+
+  /** GET /admin/realms/{realm}/group-by-path/{path} */
+  getGroupByPath(realm: string, path: string): Promise<GroupSummary> {
+    const segs = path.split('/').filter(Boolean).map(enc).join('/');
+    return this.get(`/admin/realms/${enc(realm)}/group-by-path/${segs}`);
+  }
+
+  /** GET /admin/realms/{realm}/groups/{id}/role-mappings */
+  getGroupRoleMappings(realm: string, groupId: string): Promise<RoleMappings> {
+    return this.get(`/admin/realms/${enc(realm)}/groups/${enc(groupId)}/role-mappings`);
+  }
+
+  /** GET /admin/realms/{realm}/roles-by-id/{id}/composites — direct children of a composite. */
+  getRoleComposites(realm: string, roleId: string): Promise<RoleRepresentation[]> {
+    return this.get(`/admin/realms/${enc(realm)}/roles-by-id/${enc(roleId)}/composites`);
+  }
+
+  /** GET /admin/realms/{realm}/clients/{id}/roles */
+  listClientRoles(realm: string, clientUuid: string): Promise<RoleRepresentation[]> {
+    return this.get(
+      `/admin/realms/${enc(realm)}/clients/${enc(clientUuid)}/roles?briefRepresentation=true`,
+    );
+  }
+
+  /**
+   * GET /admin/realms/{realm}/roles/{name}/groups, or the client-role variant.
+   * Groups the role is mapped to directly.
+   */
+  getRoleGroups(realm: string, roleName: string, clientUuid?: string): Promise<GroupSummary[]> {
+    const base = clientUuid
+      ? `/admin/realms/${enc(realm)}/clients/${enc(clientUuid)}/roles/${enc(roleName)}`
+      : `/admin/realms/${enc(realm)}/roles/${enc(roleName)}`;
+    return this.get(`${base}/groups?briefRepresentation=true&max=50`);
+  }
+
+  /**
+   * GET /admin/realms/{realm}/clients/{id}/evaluate-scopes/generate-example-access-token
+   * Returns the decoded payload of the access token the user would get for this client.
+   * Nothing is issued or signed; no session is created.
+   */
+  exampleAccessToken(
+    realm: string,
+    clientUuid: string,
+    userId: string,
+    scope = 'openid',
+  ): Promise<Record<string, unknown>> {
+    const q = new URLSearchParams({ scope, userId });
+    return this.get(
+      `/admin/realms/${enc(realm)}/clients/${enc(clientUuid)}/evaluate-scopes/generate-example-access-token?${q}`,
+    );
   }
 
   /**

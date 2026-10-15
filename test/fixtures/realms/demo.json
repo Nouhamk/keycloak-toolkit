@@ -3,18 +3,35 @@
   "enabled": true,
   "roles": {
     "realm": [
-      { "name": "reports-viewer", "description": "Can read reports" },
+      {
+        "name": "reports-viewer",
+        "description": "Can read reports",
+        "composite": true,
+        "composites": { "client": { "reports-backend": ["read"] } }
+      },
       {
         "name": "reports-admin",
         "description": "Can manage reports",
         "composite": true,
         "composites": { "realm": ["reports-viewer"] }
-      }
-    ]
+      },
+      { "name": "billing-viewer", "description": "Can see invoices" }
+    ],
+    "client": {
+      "reports-backend": [
+        { "name": "read", "description": "Read reports through the API" },
+        { "name": "export", "description": "Export reports as CSV" }
+      ]
+    }
   },
   "groups": [
-    { "name": "analysts", "realmRoles": ["reports-viewer"] },
-    { "name": "admins", "realmRoles": ["reports-admin"] }
+    {
+      "name": "analysts",
+      "realmRoles": ["reports-viewer"],
+      "subGroups": [{ "name": "senior", "clientRoles": { "reports-backend": ["export"] } }]
+    },
+    { "name": "admins", "realmRoles": ["reports-admin"] },
+    { "name": "finance", "realmRoles": ["billing-viewer"] }
   ],
   "clients": [
     {
@@ -38,8 +55,20 @@
         "oauth2.device.authorization.grant.enabled": "true"
       },
       "directAccessGrantsEnabled": false
+    },
+    {
+      "clientId": "billing-app",
+      "description": "Only receives billing roles in its tokens (full scope off)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "fullScopeAllowed": false,
+      "redirectUris": ["http://127.0.0.1/*"],
+      "attributes": { "pkce.code.challenge.method": "S256" },
+      "directAccessGrantsEnabled": false
     }
   ],
+  "scopeMappings": [{ "client": "billing-app", "roles": ["billing-viewer"] }],
   "users": [
     {
       "username": "alice",
@@ -60,6 +89,16 @@
       "lastName": "Admin",
       "credentials": [{ "type": "password", "value": "bob", "temporary": false }],
       "groups": ["/admins"]
+    },
+    {
+      "username": "carol",
+      "enabled": true,
+      "email": "carol@example.com",
+      "emailVerified": true,
+      "firstName": "Carol",
+      "lastName": "Senior",
+      "credentials": [{ "type": "password", "value": "carol", "temporary": false }],
+      "groups": ["/analysts/senior"]
     }
   ]
 }

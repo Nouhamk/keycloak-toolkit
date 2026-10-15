@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { AccessPanel } from './access/AccessPanel';
 import { AdminClientFactory } from './connections/AdminClientFactory';
 import { runAddConnectionWizard } from './connections/addConnectionWizard';
 import { ConnectionStore } from './connections/ConnectionStore';
@@ -144,6 +145,23 @@ export function activate(ctx: vscode.ExtensionContext): void {
           node?.type === 'realm' ? { conn: node.conn, realm: node.realm } : undefined,
         ),
       ),
+    ),
+
+    vscode.commands.registerCommand('keycloak.explainAccess', (node?: Node) =>
+      guarded('Explain access', async () => {
+        if (node?.type === 'item' && node.kind === 'users') {
+          await AccessPanel.open(
+            { conn: node.conn, realm: node.realm, user: { id: node.id, username: node.label } },
+            clients,
+          );
+          return;
+        }
+        const ref =
+          node?.type === 'realm'
+            ? { conn: node.conn, realm: node.realm }
+            : await pickRealm(store, clients, 'Explain access');
+        if (ref) await AccessPanel.open(ref, clients);
+      }),
     ),
 
     vscode.commands.registerCommand('keycloak.getToken', async (node?: Node) => {

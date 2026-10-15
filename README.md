@@ -32,6 +32,19 @@ Early development. Available today:
   - Validation and autocomplete for `*.realm.json`, `*-realm.json`, `realm-export.json`, and
     keycloak-config-cli `*.realm.yaml` files (YAML needs the Red Hat YAML extension).
 
+## Explain Access
+
+Right-click a user (or a realm) → **Explain Access…**, then pick a client and a role. The panel shows:
+
+- a clear verdict: has the role / missing / has it but it is filtered out of the token;
+- every path that grants the role (user → group → parent group → composite role);
+- the groups that would grant it, if it is missing;
+- the access token Keycloak would actually issue for that user and client.
+
+Try it with the demo realm: `alice` → `reports-spa` → `reports-admin` (missing), `bob` → `reports-backend` → `read`
+(composite path), `carol` (inherited from a parent group), `alice` → `billing-app` → `reports-viewer`
+(filtered out of the token).
+
 ## Quick start (development)
 
 ```sh

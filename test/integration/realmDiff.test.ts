@@ -49,7 +49,7 @@ describe('realm export + normalization against the demo realm', () => {
     expect(realm.realm).toBe('demo');
     // Only service-account users (they hold the client's roles), never real users.
     for (const u of realm.users ?? []) expect(u.username).toMatch(/^service-account-/);
-    expect(text).not.toMatch(/alice|bob/);
+    expect(text).not.toMatch(/alice|bob|carol/);
     expect(text).not.toContain('dev-only-secret');
     expect(text).not.toMatch(/"id":/);
   });

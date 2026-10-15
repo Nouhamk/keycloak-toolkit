@@ -4,6 +4,10 @@
 
 ### Added
 
+- Explain Access: pick a user, client and role to see _why_ the user has the role (direct, group,
+  parent group or composite paths drawn as a diagram), which groups would grant it if missing, and
+  whether it actually reaches the access token (scope mappings, `fullScopeAllowed`).
+- Redesigned Token Playground: summary cards, expiry ring, jwt.io-style coloured token, tabs.
 - Realm as code: `Pull Realm to File`, `Compare with Live Realm`, `Compare Two Realms`.
   Exports are normalized (ids removed, keys and lists sorted, secrets masked, no real users)
   so diffs only show meaningful changes.
